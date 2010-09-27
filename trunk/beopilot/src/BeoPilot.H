@@ -2,6 +2,7 @@
 #include <deque>
 #include <list>
 #include "Serial.H"
+#include <control_toolbox/pid.h>
 #ifndef __BEOPILOT_H__
 #define __BEOPILOT_H__
 
@@ -10,7 +11,12 @@ typedef struct{
                 float time,transVel,rotVel,encoderX,encoderY,encoderOri,rcTransVel,rcRotVel;
                 int rcMode;
 } motorData;
+typedef struct{
+	double x;
+	double y;
+	double z;
 
+}Point3D;
 //! The BeoPilot module is responsible for actually driving the BeoBot2.  All motor
 //! requests are serviced to hardware by this module through MotorRequest messages.
 class BeoPilot {
@@ -26,6 +32,9 @@ public:
 
         //Send the motor speeds ([-1 .. 1]) to the motordriver/propeller
         void SetMotors(float motor1speed, float motor2speed);
+
+	
+        void SetMotorsPid(float motor1speed, float motor2speed);
 
         //Get the RC transmitter status
         unsigned char getRCStatus();
@@ -43,8 +52,11 @@ public:
         void UpdateRCStatus();
 
 
+
 	//Update position after get odometry data
         void UpdatePosition(void);
+
+	void resetEncoder();
 	Serial* itsSerial;
         //////////////////////////////////////////
         //Motor Data Structures
@@ -57,6 +69,17 @@ public:
         float itsMotor2Speed;
         int itsLeftEncoder;
         int itsRightEncoder;
+	ros::Time itsPreviousTime;
+        Point3D itsPosition;
+        Point3D itsDiffPosition;
+        Point3D itsVelocity;
+	int itsLastRightEncoder;
+	int itsLastLeftEncoder;
+	double itsLeftMotorVelocity;
+	double itsRightMotorVelocity;
+	control_toolbox::Pid itsPidSpeed;
+	control_toolbox::Pid itsPidRot;
+	ros::Duration dt ;
 
 };
 #endif
